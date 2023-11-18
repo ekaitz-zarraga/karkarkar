@@ -1,0 +1,3 @@
+[submodule "AhoTTS"]
+	path = AhoTTS
+	url = git@github.com:ekaitz-zarraga/AhoTTS.git
