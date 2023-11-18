@@ -1,33 +1,31 @@
 const std = @import("std");
+const Htts = @import("ahotts.zig").Htts;
 const c = @cImport({
-    @cInclude("htts.h");
     @cInclude("ao/ao.h");
-    @cInclude("malloc.h");
 });
 
 
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
-    const htts = c.HTTS_new();
-    defer c.HTTS_delete(htts);
+    c.ao_initialize();
+    defer c.ao_shutdown();
 
-    _ = c.HTTS_set(htts, "PthModel", "Pth1");
-    _ = c.HTTS_set(htts, "Method", "HTS");
-    _ = c.HTTS_set(htts, "Lang", "eu");
-    _ = c.HTTS_set(htts, "HDicDBName", "/gnu/store/bpqm6njc0bczhmn9zi4qwsyr0hp1imgy-ahotts-master/share/AhoTTS/data_tts/dicts/eu_dicc");
+    var default_driver = c.ao_default_driver_id();
+    var format : c.ao_sample_format = .{
+        .bits = 16,
+        .channels = 1,
+        .rate = 16000,
+        .byte_format = c.AO_FMT_LITTLE,
+        .matrix = undefined,
+    };
+    var device = c.ao_open_live(default_driver, &format, null);
+    defer _ = c.ao_close(device);
 
-    if(0 == c.HTTS_create(htts)){ return; } // THIS SHOULD BE AN ERROR
-    _ = c.HTTS_set(htts, "voice_path", "/gnu/store/bpqm6njc0bczhmn9zi4qwsyr0hp1imgy-ahotts-master/share/AhoTTS/data_tts/voices/aholab_eu_female/");
-    _ = c.HTTS_set(htts, "vp", "yes");
+    var htts = Htts.create("AhoTTS/data_tts/", "eu").?;
+    defer htts.delete();
 
-
-    const text = "Putaseme halakoa";
-    if(0 != c.HTTS_input_multilingual(htts, text, "eu", "")){
-        var samples: [*c]c_short = undefined;
-        _ = c.HTTS_output_multilingual(htts, "eu", &samples);
-        defer c.free(samples);
-    }
+    var samples = htts.say("Kaixo Zitalko zelan dena?").?;
+    defer c.free(samples.ptr);
+    _ = c.ao_play(device, @intToPtr([*c]u8, @ptrToInt(samples.ptr)), @truncate(c_uint, samples.len*@sizeOf(c_short)));
 }
 
 test "simple test" {

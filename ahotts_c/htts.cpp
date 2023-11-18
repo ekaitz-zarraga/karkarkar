@@ -1,5 +1,5 @@
 #include "htts.h"
-#include <AhoTTS/htts.hpp>
+#include <htts.hpp>
 
 // TODO use booleans where booleans are needed
 
@@ -19,6 +19,11 @@ extern "C" {
         return static_cast<int>(htts->set(key, val));
     }
 
+    const char *HTTS_get( void *v, const char *key) {
+        HTTS *htts = static_cast<HTTS*>(v);
+        return htts->get(key);
+    }
+
     int HTTS_create( void * v ) {
         HTTS *htts = static_cast<HTTS*>(v);
         return static_cast<int>(htts->create());
@@ -31,7 +36,7 @@ extern "C" {
 
     int HTTS_input_multilingual( void * v, const char *text, const char *lang, const char *datapath ) {
         HTTS *htts = static_cast<HTTS*>(v);
-        return htts->input_multilingual(text, lang, datapath, false);
+        return htts->input_multilingual(text, lang, datapath, 0);
     }
 
     // This allocates `samples`
