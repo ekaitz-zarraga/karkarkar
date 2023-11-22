@@ -14,17 +14,18 @@ pub const Htts = struct {
     datadir: []const u8,
     lang: []const u8,
 
-    pub fn create(datadir: []const u8, lang:[]const u8) ?Htts {
+    pub fn init(datadir: []const u8, lang:[]const u8) ?Htts {
         _ = datadir; // TODO use the input better
 
 
         var htts = c.HTTS_new();
 
+        // NOTE: The order is relevant. CAREFUL
+        _ = c.HTTS_set(htts, "HDicDBName", DICPATH);
         if(0 == c.HTTS_create(htts)){ return null; } // THIS SHOULD BE AN ERROR
         _ = c.HTTS_set(htts, "PthModel", "Pth1");
         _ = c.HTTS_set(htts, "Method", "HTS");
-        _ = c.HTTS_set(htts, "Lang", "eu");
-        _ = c.HTTS_set(htts, "HDicDBName", DICPATH);
+        _ = c.HTTS_set(htts, "Lang", lang.ptr);
         _ = c.HTTS_set(htts, "vp", "yes");
         _ = c.HTTS_set(htts, "voice_path", VOICEDIR);
         return Htts {
@@ -45,7 +46,7 @@ pub const Htts = struct {
         return null;
     }
 
-    pub fn delete(self:*Htts) void {
+    pub fn deinit(self:*Htts) void {
         c.HTTS_delete(self.internal);
     }
 };
