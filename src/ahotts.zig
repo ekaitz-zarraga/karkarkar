@@ -12,6 +12,7 @@ const DICPATH = DICDIR ++ "/eu_dicc";
 const HttsError = error {
     Allocation,
     Creation,
+    Prepare,
 };
 
 pub const Htts = struct {
@@ -40,14 +41,17 @@ pub const Htts = struct {
         };
     }
 
-    pub fn say(self:*Htts, text:[*c]const u8) ?[]c_short {
-        if(0 != c.HTTS_input_multilingual(self.internal, text, "eu", DATADIR)){
-            var samples: [*c]c_short = undefined;
-            var res = c.HTTS_output_multilingual(self.internal, "eu", &samples);
-            var len = @intCast(usize, if (res < 0) -res else res);
-            return samples[0..len];
+    pub fn prepare(self:*Htts, text:[*c]const u8) !void {
+        if(0 == c.HTTS_input_multilingual(self.internal, text, "eu", DATADIR)){
+            return HttsError.Prepare;
         }
-        return null;
+    }
+
+    pub fn consume(self: *Htts) ![]c_short{
+        var samples: [*c]c_short = undefined;
+        var res = c.HTTS_output_multilingual(self.internal, "eu", &samples);
+        var len = @intCast(usize, if (res < 0) -res else res);
+        return samples[0..len];
     }
 
     pub fn deinit(self:*Htts) void {

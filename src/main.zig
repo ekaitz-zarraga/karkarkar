@@ -15,7 +15,7 @@ pub fn main() !void {
         .htts = &htts,
     };
 
-    try talker.say("Kaixo Zitalko zelan dena?");
+    try talker.say("Hegoak ebaki banizkio nirea izango zen. Ez zuen alde egingo.");
 }
 
 test "simple test" {

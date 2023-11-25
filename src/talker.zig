@@ -9,8 +9,12 @@ pub const Talker = struct {
     htts: *Htts,
 
     pub fn say(self: *Talker, str: [*c]const u8) !void {
-        var samples = self.htts.say(str).?;
-        defer c.free(samples.ptr);
-        try self.ao.play(samples);
+        try self.htts.prepare(str);
+        var samples = try self.htts.consume();
+        while (samples.len != 0) : (samples = try self.htts.consume()){
+            errdefer c.free(samples.ptr);
+            try self.ao.play(samples);
+            c.free(samples.ptr);
+        }
     }
 };
