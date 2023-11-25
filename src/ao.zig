@@ -25,10 +25,10 @@ pub const Ao = struct {
 
         const driver = c.ao_default_driver_id();
         if ( driver == -1 ) {
-            return error.DriverSelectionError;
+            return AoError.DriverSelection;
         }
         var device = c.ao_open_live(driver, &format, null)
-            orelse return error.DeviceError;
+            orelse return AoError.DeviceOpen;
 
         return Ao {
             .device = device,
@@ -41,7 +41,7 @@ pub const Ao = struct {
             @intToPtr([*c]u8, @ptrToInt(samples.ptr)),
             @truncate(c_uint, samples.len*@sizeOf(c_short)));
         if ( res == 0 ) {
-            return error.Playback;
+            return AoError.Playback;
         }
     }
 

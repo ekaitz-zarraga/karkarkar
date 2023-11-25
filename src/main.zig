@@ -7,7 +7,7 @@ pub fn main() !void {
     var ao = try Ao.init();
     defer ao.deinit();
 
-    var htts = Htts.init("AhoTTS/data_tts/", "eu").?;
+    var htts = try Htts.init("AhoTTS/data_tts/", "eu");
     defer htts.deinit();
 
     var talker = Talker {

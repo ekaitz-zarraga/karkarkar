@@ -9,27 +9,32 @@ const VOICEDIR = "AhoTTS/data_tts/voices/aholab_eu_female/";
 const DICDIR = "AhoTTS/data_tts/dicts/";
 const DICPATH = DICDIR ++ "/eu_dicc";
 
+const HttsError = error {
+    Allocation,
+    Creation,
+};
+
 pub const Htts = struct {
     internal: *anyopaque,
     datadir: []const u8,
     lang: []const u8,
 
-    pub fn init(datadir: []const u8, lang:[]const u8) ?Htts {
+    pub fn init(datadir: []const u8, lang:[]const u8) !Htts {
         _ = datadir; // TODO use the input better
 
 
-        var htts = c.HTTS_new();
+        var htts = c.HTTS_new() orelse return HttsError.Allocation;
 
         // NOTE: The order is relevant. CAREFUL
         _ = c.HTTS_set(htts, "HDicDBName", DICPATH);
-        if(0 == c.HTTS_create(htts)){ return null; } // THIS SHOULD BE AN ERROR
+        if(0 == c.HTTS_create(htts)){ return HttsError.Creation; }
         _ = c.HTTS_set(htts, "PthModel", "Pth1");
         _ = c.HTTS_set(htts, "Method", "HTS");
         _ = c.HTTS_set(htts, "Lang", lang.ptr);
         _ = c.HTTS_set(htts, "vp", "yes");
         _ = c.HTTS_set(htts, "voice_path", VOICEDIR);
         return Htts {
-            .internal = htts.?,
+            .internal = htts,
             .datadir = DATADIR,
             .lang = lang
         };
@@ -40,7 +45,6 @@ pub const Htts = struct {
             var samples: [*c]c_short = undefined;
             var res = c.HTTS_output_multilingual(self.internal, "eu", &samples);
             var len = @intCast(usize, if (res < 0) -res else res);
-            _ = c.HTTS_flush(self.internal);
             return samples[0..len];
         }
         return null;
