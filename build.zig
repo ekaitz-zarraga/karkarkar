@@ -8,7 +8,7 @@ pub fn build(b: *Builder) void {
     const exe = b.addExecutable( "karkarkar", "src/main.zig",);
     exe.addIncludePath("ahotts_c");
 
-    // TODO remove us later
+    // Submodule ftw :S
     exe.addIncludePath("AhoTTS/src");
     exe.addLibraryPath("AhoTTS/build/src/");
 
