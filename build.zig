@@ -1,4 +1,22 @@
 const Builder = @import("std").build.Builder;
+const LibExeObjStep = @import("std").build.LibExeObjStep;
+
+pub fn addConfig(step: *LibExeObjStep) void {
+    step.addIncludePath("ahotts_c");
+
+    // Submodule ftw :S
+    step.addIncludePath("AhoTTS/src");
+    step.addLibraryPath("AhoTTS/build/src/");
+
+    step.linkLibCpp();
+    step.linkSystemLibrary("ao");
+    step.linkSystemLibrary("c");
+    step.linkSystemLibrary("m");
+    step.linkSystemLibrary("htts");
+    step.addCSourceFiles(&.{
+        "ahotts_c/htts.cpp"
+    }, &.{});
+}
 
 pub fn build(b: *Builder) void {
 
@@ -6,24 +24,10 @@ pub fn build(b: *Builder) void {
     const mode = b.standardReleaseOptions();
 
     const exe = b.addExecutable( "karkarkar", "src/main.zig",);
-    exe.addIncludePath("ahotts_c");
-
-    // Submodule ftw :S
-    exe.addIncludePath("AhoTTS/src");
-    exe.addLibraryPath("AhoTTS/build/src/");
-
-    exe.linkLibCpp();
-    exe.linkSystemLibrary("ao");
-    exe.linkSystemLibrary("c");
-    exe.linkSystemLibrary("m");
-    exe.linkSystemLibrary("htts");
-    exe.addCSourceFiles(&.{
-        "ahotts_c/htts.cpp"
-    }, &.{});
+    addConfig(exe);
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.install();
-
     const run_cmd = exe.run();
     run_cmd.step.dependOn(b.getInstallStep());
     if (b.args) |args| {
@@ -34,6 +38,7 @@ pub fn build(b: *Builder) void {
     run_step.dependOn(&run_cmd.step);
 
     const exe_tests = b.addTest("src/main.zig");
+    addConfig(exe_tests);
     exe_tests.setTarget(target);
     exe_tests.setBuildMode(mode);
 
