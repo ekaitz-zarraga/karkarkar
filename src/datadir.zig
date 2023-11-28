@@ -1,9 +1,8 @@
 const builtin   = @import("builtin");
 const std       = @import("std");
 const fs        = std.fs;
+const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
-const getAppDataDir = std.fs.getAppDataDir; // REIMPLEMENT THIS AND USE IT TO
-                                            // FIND THE DIRS IF THEY EXIST
 
 fn exists(directory: []const u8) bool{
     const options = .{
@@ -15,13 +14,50 @@ fn exists(directory: []const u8) bool{
     return true;
 }
 
+fn populateWindowsDirs(allocator: Allocator, dirs: *ArrayList([]const u8)) !void {
+    const local_app_data_dir = try std.process.getEnvVarOwned(allocator, "LOCALAPPDATA");
+    try dirs.append(local_app_data_dir);
+}
 
-fn findLinuxDataDirs (allocator: Allocator, appname: []const u8) ![]u8 {
-    const datadirs = try std.process.getEnvVarOwned(allocator, "XDG_DATA_DIRS");
-    // TODO: Maybe try in /usr/share?
-    defer allocator.free(datadirs);
-    var it = std.mem.tokenize(u8, datadirs, ":");
-    while (it.next()) |dir| {
+fn populateLinuxDirs(allocator: Allocator, dirs: *ArrayList([]const u8)) !void {
+    const xdg_data_home = std.process.getEnvVarOwned(allocator, "XDG_DATA_HOME") catch null;
+    if (xdg_data_home) |x|{
+        try dirs.append(x);
+    }
+
+    const xdg_data_dirs = std.process.getEnvVarOwned(allocator, "XDG_DATA_DIRS") catch null;
+    if (xdg_data_dirs) |x| {
+        defer allocator.free(x);
+        var it = std.mem.tokenize(u8, x, ":");
+        while (it.next()) |dir| {
+            try dirs.append(try allocator.dupe(u8, dir));
+        }
+    }
+
+    try dirs.append(try allocator.dupe(u8, "/usr/share"));
+    try dirs.append(try allocator.dupe(u8, "/share"));
+}
+
+fn cleanDirs (allocator: Allocator, dirs: *ArrayList([]const u8)) void{
+    for (dirs.items) |dir| {
+        allocator.free(dir);
+    }
+}
+
+/// Our data will be installed in LocalAppData in Windows and /share/ or
+/// similar in Linux (Guix uses /share and stores it in XDG_DATA_DIRS).
+pub fn findDataDir(allocator: Allocator, appname: []const u8) ![]u8 {
+    var dirs = ArrayList([]const u8).init(allocator);
+    defer dirs.deinit();
+
+    switch (builtin.os.tag) {
+        .linux   => try populateLinuxDirs(allocator, &dirs),
+        .windows => try populateWindowsDirs(allocator, &dirs),
+        else     => error.NotImplemented,
+    }
+    defer cleanDirs(allocator, &dirs);
+
+    for (dirs.items) |dir| {
         var directory = try fs.path.join(allocator, &[_][]const u8{ dir, appname });
         std.debug.print("trying: {s}\n", .{directory});
         if ( !exists(directory) ){
@@ -34,12 +70,16 @@ fn findLinuxDataDirs (allocator: Allocator, appname: []const u8) ![]u8 {
     return error.NotFound;
 }
 
-/// Our data will be installed in LocalAppData in Windows and /share/ or
-/// similar in Linux (Guix uses /share and stores it in XDG_DATA_DIRS).
-pub fn findDataDir(allocator: Allocator, appname: []const u8) ![]u8 {
-    return switch (builtin.os.tag) {
-        .linux   => return try findLinuxDataDirs(allocator, appname),
-        .windows => return try getAppDataDir(allocator, appname),
+test "See if it explodes" {
+    const allocator = std.testing.allocator;
+    var dirs = ArrayList([]const u8).init(allocator);
+    defer dirs.deinit();
+
+    switch (builtin.os.tag) {
+        .linux   => try populateLinuxDirs(allocator, &dirs),
+        .windows => try populateWindowsDirs(allocator, &dirs),
         else     => error.NotImplemented,
-    };
+    }
+    defer cleanDirs(allocator, &dirs);
+
 }
