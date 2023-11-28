@@ -1,6 +1,7 @@
 const std = @import("std");
 const debug = std.debug;
-const fmt = std.fmt;
+const path  = std.fs.path;
+const fmt   = std.fmt;
 const c = @cImport({
     @cInclude("htts.h");
     @cInclude("malloc.h");
@@ -21,10 +22,17 @@ const HttsConfig = struct {
     fn init(alloc: std.mem.Allocator, datadir: []const u8, lang: []const u8)
         !HttsConfig
     {
+        var voice_dir = try fmt.allocPrint(alloc, "aholab_{s}_female", .{lang});
+        defer alloc.free(voice_dir);
+
+        var dicts_dir = try fmt.allocPrint(alloc, "{s}_dicc", .{lang});
+        defer alloc.free(dicts_dir);
+
+        var main_dir  = try path.join(alloc, &[_][]const u8{datadir, "data_tts"});
         return HttsConfig{
-            .datadir  = try fmt.allocPrint(alloc, "{s}", .{datadir}),
-            .voicedir = try fmt.allocPrint(alloc, "{s}/voices/aholab_{s}_female/", .{datadir, lang}),
-            .dicdir   = try fmt.allocPrint(alloc, "{s}/dicts/{s}_dicc", .{datadir, lang}),
+            .datadir  = main_dir,
+            .voicedir = try path.join(alloc, &[_][]const u8{main_dir, "voices", voice_dir}),
+            .dicdir   = try path.join(alloc, &[_][]const u8{main_dir, "dicts", dicts_dir}),
             .alloc    = alloc,
         };
     }

@@ -1,26 +1,30 @@
-const std    = @import("std");
-const Htts   = @import("ahotts.zig").Htts;
-const Ao     = @import("ao.zig").Ao;
-const Talker = @import("talker.zig").Talker;
+const std           = @import("std");
+const Htts          = @import("ahotts.zig").Htts;
+const Ao            = @import("ao.zig").Ao;
+const Talker        = @import("talker.zig").Talker;
+const findDataDir   = @import("datadir.zig").findDataDir;
+const _Irc          = @import("irc.zig");
+const Irc           = _Irc.Irc;
+const IrcCommandTag = _Irc.IrcCommandTag;
+const IrcMessage    = _Irc.IrcMessage;
 
 pub fn main() !void {
-    var argv = std.os.argv;
-    if (argv.len != 3){
-        const stderr = std.io.getStdErr();
-        try stderr.writer().print("2 arguments needed: \n\t{s} es|eu MESSAGE", .{argv[0]});
-        return error.ArgumentCount;
-    }
+    // TODO parameterize these
+    const lang    = "eu";
+    const channel = "#ekaitzza";
 
-    const lang    = std.mem.span(argv[1]);
-    if (!std.mem.eql(u8, lang, "es") and !std.mem.eql(u8, lang, "eu")){
-        return error.InvalidLang;
-    }
-    const message = argv[2];
+    var allocator = std.heap.page_allocator;
+    const datadir = try findDataDir(allocator, "AhoTTS");
+    defer allocator.free(datadir);
+
+    var irc = try Irc.init(allocator, "irc.chat.twitch.tv", 6667);
+    try irc.login();
+    try irc.join(channel);
 
     var ao = try Ao.init();
     defer ao.deinit();
 
-    var htts = try Htts.init(std.heap.page_allocator,  "AhoTTS/data_tts", lang);
+    var htts = try Htts.init(allocator, datadir, lang);
     defer htts.deinit();
 
     var talker = Talker {
@@ -28,5 +32,25 @@ pub fn main() !void {
         .htts = &htts,
     };
 
-    try talker.say(message);
+    // TODO: graceful shutdown with SIGINT
+    while (true) {
+        var answer = try irc.rec();
+        var message = IrcMessage.parse(answer);
+
+        switch (message.command) {
+            IrcCommandTag.Ping    => {
+                std.debug.print("PING {s}", .{message.parameters.?});
+                try irc.pong(message.parameters orelse "");
+            },
+            IrcCommandTag.Privmsg => |v| {
+                std.debug.print("{s}: Message received\n", .{v});
+                var body = try allocator.dupeZ(u8, message.parameters.?);
+                try talker.say(body.ptr);
+            },
+            IrcCommandTag.Cap     => |v| std.debug.print("CAP {} \n", .{v}),
+            IrcCommandTag.Other   => std.debug.print("Unknown command: {s}\n", .{message.raw_command}),
+        }
+        allocator.free(answer);
+    }
+    try irc.send("PART");
 }
