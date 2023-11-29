@@ -1,33 +1,39 @@
-const Builder = @import("std").build.Builder;
-const LibExeObjStep = @import("std").build.LibExeObjStep;
+const std           = @import("std");
+const Builder       = std.build.Builder;
+const LibExeObjStep = std.build.LibExeObjStep;
+const NativeTargetInfo = std.zig.system.NativeTargetInfo;
 
-pub fn addConfig(step: *LibExeObjStep) void {
+pub fn addConfig(step: *LibExeObjStep) !void {
     step.addIncludePath("ahotts_c");
-
-    // Submodule ftw :S
-    step.addIncludePath("AhoTTS/src");
-    step.addLibraryPath("AhoTTS/build/src/");
-
-    step.linkLibCpp();
-    step.linkSystemLibrary("ao");
-    step.linkSystemLibrary("c");
-    step.linkSystemLibrary("m");
-    step.linkSystemLibrary("htts");
     step.addCSourceFiles(&.{
         "ahotts_c/htts.cpp"
     }, &.{});
+    step.linkLibCpp();
+    step.linkSystemLibrary("c");
+    step.linkSystemLibrary("m");
+
+    const targetinfo = try NativeTargetInfo.detect(step.target);
+    if (targetinfo.target.os.tag == .windows) {
+        // Add library paths for windows, as we are building in linux...
+        // We have the prebuilt libs in a folder called 'windows'
+        // TODO: build libao for windows
+        step.addLibraryPath("windows");
+    }
+    step.linkSystemLibrary("ao");
+    step.linkSystemLibrary("htts");
 }
 
-pub fn build(b: *Builder) void {
+pub fn build(b: *Builder) !void {
 
     const target = b.standardTargetOptions(.{});
     const mode = b.standardReleaseOptions();
 
     const exe = b.addExecutable( "karkarkar", "src/main.zig",);
-    addConfig(exe);
     exe.setTarget(target);
     exe.setBuildMode(mode);
+    try addConfig(exe);
     exe.install();
+
     const run_cmd = exe.run();
     run_cmd.step.dependOn(b.getInstallStep());
     if (b.args) |args| {
@@ -38,9 +44,9 @@ pub fn build(b: *Builder) void {
     run_step.dependOn(&run_cmd.step);
 
     const exe_tests = b.addTest("src/main.zig");
-    addConfig(exe_tests);
     exe_tests.setTarget(target);
     exe_tests.setBuildMode(mode);
+    try addConfig(exe_tests);
 
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&exe_tests.step);
