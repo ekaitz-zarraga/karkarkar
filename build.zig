@@ -16,10 +16,12 @@ pub fn addConfig(step: *LibExeObjStep) !void {
     if (targetinfo.target.os.tag == .windows) {
         // Add library paths for windows, as we are building in linux...
         // We have the prebuilt libs in a folder called 'windows'
-        // TODO: build libao for windows
-        step.addLibraryPath("windows");
+        step.addIncludePath("windows/include");
+        step.addLibraryPath("windows/lib");
+        step.linkSystemLibrary("OpenAL32");
+    } else {
+        step.linkSystemLibrary("openal");
     }
-    step.linkSystemLibrary("ao");
     step.linkSystemLibrary("htts");
 }
 

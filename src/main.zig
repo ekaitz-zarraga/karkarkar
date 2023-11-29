@@ -1,6 +1,7 @@
 const std           = @import("std");
 const Htts          = @import("ahotts.zig").Htts;
-const Ao            = @import("ao.zig").Ao;
+const Ao            = @import("play/ao.zig").Ao;
+const OpenAl        = @import("play/openal.zig").OpenAl;
 const Talker        = @import("talker.zig").Talker;
 const findDataDir   = @import("datadir.zig").findDataDir;
 const _Irc          = @import("irc.zig");
@@ -21,15 +22,17 @@ pub fn main() !void {
     try irc.login();
     try irc.join(channel);
 
-    var ao = try Ao.init();
-    defer ao.deinit();
+    // var ao = try Ao.init();
+    // defer ao.deinit();
+    var audio = try OpenAl.init();
+    defer audio.deinit();
 
     var htts = try Htts.init(allocator, datadir, lang);
     defer htts.deinit();
 
     var talker = Talker {
-        .ao   = &ao,
-        .htts = &htts,
+        .audio = &audio,
+        .htts  = &htts,
     };
 
     // TODO: graceful shutdown with SIGINT
