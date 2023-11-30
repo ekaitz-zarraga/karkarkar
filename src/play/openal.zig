@@ -7,7 +7,7 @@
 // https://open-activewrl.sourceforge.net/data/OpenAL_PGuide.pdf
 // https://www.openal.org/documentation/OpenAL_Programmers_Guide.pdf
 const c = @cImport({
-    @cInclude("time.h");
+    @cInclude("unistd.h");
     @cInclude("AL/al.h");
     @cInclude("AL/alc.h");
 });
@@ -67,6 +67,7 @@ pub const OpenAl = struct {
         var source_state : c.ALint = undefined;
         c.alGetSourcei(source, c.AL_SOURCE_STATE, &source_state);
         while (source_state == c.AL_PLAYING) {
+            _ = c.sleep(1);
             c.alGetSourcei(source, c.AL_SOURCE_STATE, &source_state);
         }
         // => Remove me
