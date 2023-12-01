@@ -9,15 +9,39 @@ const Irc           = _Irc.Irc;
 const IrcCommandTag = _Irc.IrcCommandTag;
 const IrcMessage    = _Irc.IrcMessage;
 
-pub fn main() !void {
-    // TODO parameterize these
-    const lang    = "eu";
-    const channel = "#ekaitzza";
+const MainError = error {
+    ChannelDoesNotExist,
+};
 
+pub fn isHelp(argv: [*:0]u8) bool {
+    const arg = std.mem.span(argv);
+    return std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h");
+}
+
+pub fn main() !void {
     var allocator = std.heap.page_allocator;
+    const stderr = std.io.getStdErr();
+    var argv = std.os.argv;
+
+    const progname = std.fs.path.basename(std.mem.span(argv[0]));
+    if (argv.len == 2 and isHelp(argv[1])) {
+        try stderr.writer().print("Help: \n\t{s} username\n",
+            .{progname});
+        return;
+    }
+    const lang = "eu"; // TODO: Spanish support in AhoTTS is garbage and
+                       // requires utf-8 to latin-1 conversion
+    const channel_argv = std.mem.span(argv[1]);
+    var channel = try allocator.alloc(u8, channel_argv.len+1);
+    defer allocator.free(channel);
+    channel = try std.fmt.bufPrint(channel, "#{s}", .{channel_argv});
+    std.debug.print("Listening to: {s}\n", .{channel});
+
+
     const datadir = try findDataDir(allocator, "AhoTTS");
     defer allocator.free(datadir);
 
+    // TODO: check if joined properly and channel exists
     var irc = try Irc.init(allocator, "irc.chat.twitch.tv", 6667);
     try irc.login();
     try irc.join(channel);
@@ -35,7 +59,8 @@ pub fn main() !void {
         .htts  = &htts,
     };
 
-    // TODO: graceful shutdown with SIGINT
+    // TODO: graceful shutdown with SIGINT?? we don't have cross platform ways
+    // to do it...
     while (true) {
         var answer = try irc.rec();
         var message = IrcMessage.parse(answer);
@@ -51,7 +76,8 @@ pub fn main() !void {
                 try talker.say(body.ptr);
             },
             IrcCommandTag.Cap     => |v| std.debug.print("CAP {} \n", .{v}),
-            IrcCommandTag.Other   => std.debug.print("Unknown command: {s}\n", .{message.raw_command}),
+            IrcCommandTag.Other   =>
+                std.debug.print("Unknown command: {s}\n", .{message.raw_command}),
         }
         allocator.free(answer);
     }
