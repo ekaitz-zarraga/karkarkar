@@ -47,37 +47,37 @@ pub const Htts = struct {
     config: HttsConfig,
     internal: *anyopaque,
     datadir: []const u8,
-    lang: []const u8,
+    lang: [*]const u8,
 
     pub fn init(alloc: std.mem.Allocator, datadir: []const u8, lang:[]const u8) !Htts {
         var htts = c.HTTS_new() orelse return HttsError.Allocation;
         var config = try HttsConfig.init(alloc, datadir, lang);
 
         // NOTE: The order is relevant. CAREFUL
+        _ = c.HTTS_set(htts, "Lang", lang.ptr);
         _ = c.HTTS_set(htts, "HDicDBName", config.dicdir.ptr);
         if(0 == c.HTTS_create(htts)){ return HttsError.Creation; }
         _ = c.HTTS_set(htts, "PthModel", "Pth1");
         _ = c.HTTS_set(htts, "Method", "HTS");
-        _ = c.HTTS_set(htts, "Lang", lang.ptr);
         _ = c.HTTS_set(htts, "vp", "yes");
         _ = c.HTTS_set(htts, "voice_path", config.voicedir.ptr);
         return Htts {
             .config = config,
             .internal = htts,
             .datadir = datadir,
-            .lang = lang
+            .lang = lang.ptr
         };
     }
 
     pub fn prepare(self:*Htts, text:[*c]const u8) !void {
-        if(0 == c.HTTS_input_multilingual(self.internal, text, "eu", self.datadir.ptr)){
+        if(0 == c.HTTS_input_multilingual(self.internal, text, self.lang, self.datadir.ptr)){
             return HttsError.Prepare;
         }
     }
 
     pub fn consume(self: *Htts) ![]c_short{
         var samples: [*c]c_short = undefined;
-        var res = c.HTTS_output_multilingual(self.internal, "eu", &samples);
+        var res = c.HTTS_output_multilingual(self.internal, self.lang, &samples);
         var len = @intCast(usize, if (res < 0) -res else res);
         return samples[0..len];
     }
