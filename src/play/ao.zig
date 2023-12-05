@@ -38,8 +38,8 @@ pub const Ao = struct {
     pub fn play(self: *Ao, samples: []c_short) !void{
         errdefer self.deinit();
         const res = c.ao_play(self.device,
-            @intToPtr([*c]u8, @ptrToInt(samples.ptr)),
-            @truncate(c_uint, samples.len*@sizeOf(c_short)));
+            @ptrCast(samples.ptr),
+            @as(c_uint, @truncate(samples.len*@sizeOf(c_short))));
         if ( res == 0 ) {
             return AoError.Playback;
         }

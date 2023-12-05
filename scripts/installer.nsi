@@ -56,7 +56,7 @@ SectionEnd
 Section "AhoTTS library"
     SectionInstType ${IT_FULL} ${IT_MIN}
     SetOutPath "$INSTDIR\karkarkar"
-    File "../windows/lib/libhtts.dll*"
+    File "../windows/lib/htts.dll*"
 SectionEnd
 
 Section "AhoTTS dictionaries and voices"

@@ -56,11 +56,11 @@ pub const OpenAl = struct {
             return OpenAlError.GenSources;
         }
         c.alBufferData(buffer, c.AL_FORMAT_MONO16, samples.ptr,
-            @bitCast(i32, @truncate(u32, samples.len*@sizeOf(c_short))), 16000);
+            @as(i32, @bitCast( @as(u32, @truncate(samples.len*@sizeOf(c_short))))), 16000);
         if (c.alGetError() != c.AL_NO_ERROR){
             return OpenAlError.BufferData;
         }
-        c.alSourcei(source, c.AL_BUFFER, @truncate(u16, buffer));
+        c.alSourcei(source, c.AL_BUFFER, @as(u16, @truncate(buffer)));
         c.alSourcePlay(source);
 
         // TODO Remove me =>
