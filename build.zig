@@ -24,6 +24,7 @@ pub fn addConfig(step: *Step.Compile) !void {
         step.linkSystemLibrary("openal");
         step.linkSystemLibrary("htts");
     }
+    step.linker_allow_shlib_undefined = true;
 }
 
 pub fn build(b: *std.Build) !void {
