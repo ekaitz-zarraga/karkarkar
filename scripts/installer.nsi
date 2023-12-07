@@ -1,5 +1,12 @@
 # EXTRA:
 # rust-winres or binutils' windres to add an icon in the .exe
+!include nsDialogs.nsh
+!include LogicLib.nsh
+
+Var Dialog
+Var Label
+Var Text
+Var Text_State
 
 # define name of installer
 OutFile "installer.exe"
@@ -30,6 +37,27 @@ PageExEnd
 DirText "Choose a directory"
 Page directory
 
+# Extra page to choose the user to follow
+Page custom chooseUserEnter chooseUserLeave
+Function .onInit
+	StrCpy $Text_State ""
+FunctionEnd
+Function chooseUserEnter
+	nsDialogs::Create 1018
+	Pop $Dialog
+	${If} $Dialog == error
+		Abort
+	${EndIf}
+	${NSD_CreateLabel} 0 0 100% 12u "Choose your Twitch username:"
+	Pop $Label
+	${NSD_CreateText} 0 13u 100% 12u $Text_State
+	Pop $Text
+	nsDialogs::Show
+FunctionEnd
+Function chooseUserLeave
+	${NSD_GetText} $Text $Text_State
+FunctionEnd
+
 Page components
 Page instfiles
 
@@ -38,10 +66,17 @@ UninstPage instfiles
 
 Section "Karkarkar executable"
     SetOutPath "$INSTDIR\karkarkar"
-    WriteUninstaller "$INSTDIR\uninstall.exe"
-    CreateShortcut "$SMPROGRAMS\Uninstall.lnk" "$INSTDIR\uninstall.exe"
     File "../zig-out/bin/karkarkar.exe"
-    CreateShortcut "$SMPROGRAMS\karkarkar.lnk" "$INSTDIR\karkarkar.exe"
+
+    # Uninstaller
+    WriteUninstaller "$INSTDIR\karkarkar\uninstall.exe"
+    CreateShortcut "$SMPROGRAMS\Uninstall.lnk" "$INSTDIR\karkarkar\uninstall.exe"
+
+    # Make a runner in a .bat, with the user obtained during the installation
+    FileOpen $0 $INSTDIR\karkarkar\karkarkar.bat w
+    FileWrite $0 "$INSTDIR\karkarkar\karkarkar.exe $Text_State$\r$\n"
+    FileClose $0
+    CreateShortcut "$SMPROGRAMS\karkarkar.lnk" "$INSTDIR\karkarkar\karkarkar.bat"
 SectionEnd
 
 Section /o "Karkarkar sources"
@@ -54,7 +89,8 @@ SectionEnd
 
 Section "AhoTTS library"
     SetOutPath "$INSTDIR\karkarkar"
-    File "../windows/lib/htts.dll*"
+    File "../windows/lib/htts*"
+    File "../windows/lib/libhtts*"
 SectionEnd
 
 Section "AhoTTS dictionaries and voices"
@@ -68,16 +104,14 @@ Section "OpenAL-soft library"
     File /r "../windows/lib/OpenAL32*"
 SectionEnd
 
-# uninstaller section start
 Section "Uninstall"
-    # Remove the link from the start menu
+    # Remove the links from the start menu
     Delete "$SMPROGRAMS\Uninstall.lnk"
-    Delete "$INSTDIR\uninstall.exe"
+    Delete "$SMPROGRAMS\karkarkar.lnk"
 
-    # Delete the uninstaller
+    # Delete installed files (including the uninstaller)
     RMDir /r "$INSTDIR\karkarkar"
     RMDir /r "$INSTDIR\AhoTTS"
     RMDir /r "$INSTDIR\OpenAL"
     RMDir /r "$LOCALAPPDATA\AhoTTS"
-# uninstaller section end
 SectionEnd
