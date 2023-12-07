@@ -10,9 +10,6 @@ InstallDir "$DESKTOP"
 # For removing Start Menu shortcut in Windows 7
 RequestExecutionLevel user
 
-InstType "Full" IT_FULL
-InstType "Minimal" IT_MIN
-
 PageEx license
     LicenseText "You have to accept the GPL license of this program"
     LicenseData "../LICENSE.txt"
@@ -36,7 +33,6 @@ UninstPage uninstConfirm
 UninstPage instfiles
 
 Section "Karkarkar executable"
-    SectionInstType ${IT_FULL} ${IT_MIN}
     SetOutPath "$INSTDIR\karkarkar"
     WriteUninstaller "$INSTDIR\uninstall.exe"
     CreateShortcut "$SMPROGRAMS\Uninstall.lnk" "$INSTDIR\uninstall.exe"
@@ -44,8 +40,7 @@ Section "Karkarkar executable"
     CreateShortcut "$SMPROGRAMS\karkarkar.lnk" "$INSTDIR\karkarkar.exe"
 SectionEnd
 
-Section "Karkarkar sources"
-    SectionInstType ${IT_FULL}
+Section /o "Karkarkar sources"
     SetOutPath "$INSTDIR\karkarkar\sources"
     File /r "../src"
     File /r "../build.zig"
@@ -54,19 +49,16 @@ Section "Karkarkar sources"
 SectionEnd
 
 Section "AhoTTS library"
-    SectionInstType ${IT_FULL} ${IT_MIN}
     SetOutPath "$INSTDIR\karkarkar"
     File "../windows/lib/htts.dll*"
 SectionEnd
 
 Section "AhoTTS dictionaries and voices"
-    SectionInstType ${IT_FULL} ${IT_MIN}
     SetOutPath "$LOCALAPPDATA\AhoTTS"
     File /r "../windows/data/AhoTTS/"
 SectionEnd
 
-Section "OpenAL-soft library (optional)"
-    SectionInstType ${IT_FULL}
+Section "OpenAL-soft library"
     SetOutPath "$INSTDIR\karkarkar"
     File "../windows/lib/libOpenAL32.dll.a"
     File /r "../windows/lib/OpenAL32*"
