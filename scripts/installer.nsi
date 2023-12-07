@@ -6,6 +6,7 @@ OutFile "installer.exe"
 
 # define installation directory
 InstallDir "$DESKTOP"
+# InstallDir "$PROGRAMFILES" # TODO: Better this than desktop
 
 # For removing Start Menu shortcut in Windows 7
 RequestExecutionLevel user
@@ -25,6 +26,9 @@ PageEx license
     and voices"
     LicenseData "../windows/data/AhoTTS/LICENSE_VOICES.txt"
 PageExEnd
+
+DirText "Choose a directory"
+Page directory
 
 Page components
 Page instfiles
