@@ -1,5 +1,6 @@
 # EXTRA:
-# rust-winres or binutils' windres to add an icon in the .exe
+# rust-winres or binutils' windres to add an icon in the .exe or add the icon
+# to the .bat installed with the CreateShortcut
 !include nsDialogs.nsh
 !include LogicLib.nsh
 
@@ -31,7 +32,7 @@ PageExEnd
 PageEx license
     LicenseText "You have to accept the CC-BY-3 license AhoTTS dictionaries \
     and voices"
-    LicenseData "../windows/data/AhoTTS/LICENSE_VOICES.txt"
+    LicenseData "data/AhoTTS/LICENSE_VOICES.txt"
 PageExEnd
 
 DirText "Choose a directory"
@@ -40,22 +41,22 @@ Page directory
 # Extra page to choose the user to follow
 Page custom chooseUserEnter chooseUserLeave
 Function .onInit
-	StrCpy $Text_State ""
+    StrCpy $Text_State ""
 FunctionEnd
 Function chooseUserEnter
-	nsDialogs::Create 1018
-	Pop $Dialog
-	${If} $Dialog == error
-		Abort
-	${EndIf}
-	${NSD_CreateLabel} 0 0 100% 12u "Choose your Twitch username:"
-	Pop $Label
-	${NSD_CreateText} 0 13u 100% 12u $Text_State
-	Pop $Text
-	nsDialogs::Show
+    nsDialogs::Create 1018
+    Pop $Dialog
+    ${If} $Dialog == error
+        Abort
+    ${EndIf}
+    ${NSD_CreateLabel} 0 0 100% 12u "Choose your Twitch username:"
+    Pop $Label
+    ${NSD_CreateText} 0 13u 100% 12u $Text_State
+    Pop $Text
+    nsDialogs::Show
 FunctionEnd
 Function chooseUserLeave
-	${NSD_GetText} $Text $Text_State
+    ${NSD_GetText} $Text $Text_State
 FunctionEnd
 
 Page components
@@ -73,6 +74,8 @@ Section "Karkarkar executable"
     CreateShortcut "$SMPROGRAMS\Uninstall.lnk" "$INSTDIR\karkarkar\uninstall.exe"
 
     # Make a runner in a .bat, with the user obtained during the installation
+    # Maybe CreateShortcut has enough magic and we can avoid the .bat file?
+    # https://nsis.sourceforge.io/Docs/Chapter4.html#createshortcut
     FileOpen $0 $INSTDIR\karkarkar\karkarkar.bat w
     FileWrite $0 "$INSTDIR\karkarkar\karkarkar.exe $Text_State$\r$\n"
     FileClose $0
@@ -89,19 +92,19 @@ SectionEnd
 
 Section "AhoTTS library"
     SetOutPath "$INSTDIR\karkarkar"
-    File "../windows/lib/htts*"
-    File "../windows/lib/libhtts*"
+    File "lib/htts*"
+    File "lib/libhtts*"
 SectionEnd
 
 Section "AhoTTS dictionaries and voices"
     SetOutPath "$LOCALAPPDATA\AhoTTS"
-    File /r "../windows/data/AhoTTS/"
+    File /r "data/AhoTTS/"
 SectionEnd
 
 Section "OpenAL-soft library"
     SetOutPath "$INSTDIR\karkarkar"
-    File "../windows/lib/libOpenAL32.dll.a"
-    File /r "../windows/lib/OpenAL32*"
+    File "lib/libOpenAL32.dll.a"
+    File /r "lib/OpenAL32*"
 SectionEnd
 
 Section "Uninstall"
