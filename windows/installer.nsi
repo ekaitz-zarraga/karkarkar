@@ -68,10 +68,10 @@ UninstPage instfiles
 Section "Karkarkar executable"
     SetOutPath "$INSTDIR\karkarkar"
     File "../zig-out/bin/karkarkar.exe"
+    File "../icons/icon.ico"
 
     # Uninstaller
     WriteUninstaller "$INSTDIR\karkarkar\uninstall.exe"
-    CreateShortcut "$SMPROGRAMS\Uninstall.lnk" "$INSTDIR\karkarkar\uninstall.exe"
 
     # Make a runner in a .bat, with the user obtained during the installation
     # Maybe CreateShortcut has enough magic and we can avoid the .bat file?
@@ -79,7 +79,12 @@ Section "Karkarkar executable"
     FileOpen $0 $INSTDIR\karkarkar\karkarkar.bat w
     FileWrite $0 "$INSTDIR\karkarkar\karkarkar.exe $Text_State$\r$\n"
     FileClose $0
-    CreateShortcut "$SMPROGRAMS\karkarkar.lnk" "$INSTDIR\karkarkar\karkarkar.bat"
+
+    # Create shortcuts
+    CreateDirectory "$SMPROGRAMS\karkarkar"
+    CreateShortcut "$SMPROGRAMS\karkarkar\Uninstall.lnk" "$INSTDIR\karkarkar\uninstall.exe"
+    CreateShortcut "$SMPROGRAMS\karkarkar\karkarkar.lnk" "$INSTDIR\karkarkar\karkarkar.bat" \
+            "" "$INSTDIR\karkarkar\icon.ico" 0
 SectionEnd
 
 Section /o "Karkarkar sources"
@@ -92,8 +97,9 @@ SectionEnd
 
 Section "AhoTTS library"
     SetOutPath "$INSTDIR\karkarkar"
-    File "lib/htts*"
-    File "lib/libhtts*"
+    File "lib/htts.dll"
+    File "lib/libhtts.dll"
+    File "lib/libhtts.dll.a"
 SectionEnd
 
 Section "AhoTTS dictionaries and voices"
@@ -104,17 +110,44 @@ SectionEnd
 Section "OpenAL-soft library"
     SetOutPath "$INSTDIR\karkarkar"
     File "lib/libOpenAL32.dll.a"
-    File /r "lib/OpenAL32*"
+    File "lib/OpenAL32.lib"
+    File "lib/OpenAL32.dll"
+    File "lib/OpenAL32.def"
 SectionEnd
 
 Section "Uninstall"
-    # Remove the links from the start menu
-    Delete "$SMPROGRAMS\Uninstall.lnk"
-    Delete "$SMPROGRAMS\karkarkar.lnk"
+    # NOTE: installation directory is the place where the Uninstaller is
+    # located, That's why we don't need the karkarkar\ prefix.
 
-    # Delete installed files (including the uninstaller)
-    RMDir /r "$INSTDIR\karkarkar"
-    RMDir /r "$INSTDIR\AhoTTS"
-    RMDir /r "$INSTDIR\OpenAL"
+    # Remove the links from the start menu
+    Delete "$SMPROGRAMS\karkarkar\Uninstall.lnk"
+    Delete "$SMPROGRAMS\karkarkar\karkarkar.lnk"
+    RMDir  "$SMPROGRAMS\karkarkar"
+
+    # Karkarkar Sources
+    RMDir /r "$INSTDIR\sources"
+
+    # Karkarkar
+    Delete "$INSTDIR\karkarkar.exe"
+    Delete "$INSTDIR\karkarkar.bat"
+    Delete "$INSTDIR\icon.ico"
+
+    # AhoTTS
+    Delete "$INSTDIR\htts.dll"
+    Delete "$INSTDIR\libhtts.dll"
+    Delete "$INSTDIR\libhtts.dll.a"
+
+    # AhoTTS dictionaries and voices
     RMDir /r "$LOCALAPPDATA\AhoTTS"
+
+    # OpenAL
+    Delete "$INSTDIR\OpenAL32.dll"
+    Delete "$INSTDIR\OpenAL32.def"
+    Delete "$INSTDIR\OpenAL32.lib"
+    Delete "$INSTDIR\libOpenAL32.dll.a"
+
+    # Delete uninstaller
+    Delete "$INSTDIR\uninstall.exe"
+    # Delete installation directory
+    RMDir "$INSTDIR"
 SectionEnd
