@@ -17,6 +17,7 @@ fn exists(directory: []const u8) bool{
 fn populateWindowsDirs(allocator: Allocator, dirs: *ArrayList([]const u8)) !void {
     const local_app_data_dir = try std.process.getEnvVarOwned(allocator, "LOCALAPPDATA");
     try dirs.append(local_app_data_dir);
+    // try dirs.append(try fs.realpathAlloc(allocator, ".")); // Also try current folder
 }
 
 fn populateLinuxDirs(allocator: Allocator, dirs: *ArrayList([]const u8)) !void {

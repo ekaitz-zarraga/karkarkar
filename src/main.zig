@@ -11,6 +11,8 @@ const IrcMessage    = _Irc.IrcMessage;
 
 const MainError = error {
     ChannelDoesNotExist,
+    BadInput,
+    WrongArguments
 };
 
 pub fn isHelp(argv: [*:0]u8) bool {
@@ -20,18 +22,39 @@ pub fn isHelp(argv: [*:0]u8) bool {
 
 pub fn main() !void {
     var allocator = std.heap.page_allocator;
-    const stderr = std.io.getStdErr();
+    const stdin = std.io.getStdIn().reader();
+    const stdout = std.io.getStdOut().writer();
+    const stderr = std.io.getStdErr().writer();
     var argv = std.os.argv;
 
     const progname = std.fs.path.basename(std.mem.span(argv[0]));
     if (argv.len == 2 and isHelp(argv[1])) {
-        try stderr.writer().print("Help: \n\t{s} username\n",
-            .{progname});
+        try stderr.print("Help: \n\t{s} [username]\n\n" ++
+        "If username not provided, it will be queried interactively\n",
+        .{progname});
         return;
     }
+
+    // Get channel ID
+    var channel_argv : []u8 = undefined;
+    if (argv.len == 1) {
+        std.debug.print("Username not provided in command line...\n", .{});
+        var buf: [100]u8 = undefined;
+        try stdout.print("Enter your Twitch username please: ", .{});
+        if (try stdin.readUntilDelimiterOrEof(buf[0..], '\n')) |user_input| {
+            channel_argv = user_input;
+            try stdout.print("Got it!\n\n", .{});
+        } else {
+            return MainError.BadInput;
+        }
+    } else if (argv.len == 2){
+        channel_argv = std.mem.span(argv[1]);
+    } else {
+        return MainError.WrongArguments;
+    }
+
     const lang = "eu"; // TODO: Spanish support in AhoTTS is garbage and
                        // requires utf-8 to latin-1 conversion
-    const channel_argv = std.mem.span(argv[1]);
     var channel = try allocator.alloc(u8, channel_argv.len+1);
     defer allocator.free(channel);
     channel = try std.fmt.bufPrint(channel, "#{s}", .{channel_argv});
