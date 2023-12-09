@@ -1,6 +1,8 @@
 zig-cache
 zig-out
 tags
+*.ico
+*.png
 *.exe
 windows/include/*
 windows/lib/*
