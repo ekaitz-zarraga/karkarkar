@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Karkarkar
+Comment[eu]=Twitcheko txata ozenean irakurri
+Comment[en]=Read Twitch chat out loud, in basque
+Comment=Read Twitch chat out loud, in basque
+Keywords[eu]=twitch;txata;text-to-speech
+Keywords[en]=twitch;chat;text-to-speech
+Keywords=twitch;chat;text-to-speech
+Categories=Accessibility;Utility
+Version=1.0
+Terminal=true
+Icon=karkarkar
+Exec=/path/to/executable
