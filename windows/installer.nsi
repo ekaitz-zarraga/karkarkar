@@ -20,13 +20,18 @@ InstallDir "$DESKTOP"
 RequestExecutionLevel user
 
 PageEx license
-    LicenseText "You have to accept the GPL license of this program"
+    LicenseText "You have to accept the license of this program"
     LicenseData "../LICENSE.txt"
 PageExEnd
 
 PageEx license
-    LicenseText "You have to accept the GPL of the AhoTTS library"
+    LicenseText "You have to accept the license of the AhoTTS library"
     LicenseData "../LICENSE.txt"
+PageExEnd
+
+PageEx license
+    LicenseText "You have to accept the license of the AhoTTS library"
+    LicenseData "data/OPENAL_LICENSE.txt"
 PageExEnd
 
 PageEx license
