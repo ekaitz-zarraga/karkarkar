@@ -8,8 +8,8 @@ pub fn addConfig(step: *Step.Compile) !void {
     step.addCSourceFiles(&.{
         "ahotts_c/htts.cpp"
     }, &.{});
+    step.linkLibC();
     step.linkLibCpp();
-    step.linkSystemLibrary("c");
     step.linkSystemLibrary("m");
 
     const targetinfo = try NativeTargetInfo.detect(step.target);
