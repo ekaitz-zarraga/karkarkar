@@ -20,24 +20,20 @@ InstallDir "$DESKTOP"
 RequestExecutionLevel user
 
 PageEx license
-    LicenseText "You have to accept the license of this program"
+    LicenseText "You have to accept the license of this program, and the \
+    included AhoTTS"
     LicenseData "../LICENSE.txt"
-PageExEnd
-
-PageEx license
-    LicenseText "You have to accept the license of the AhoTTS library"
-    LicenseData "../LICENSE.txt"
-PageExEnd
-
-PageEx license
-    LicenseText "You have to accept the license of the AhoTTS library"
-    LicenseData "data/OPENAL_LICENSE.txt"
 PageExEnd
 
 PageEx license
     LicenseText "You have to accept the CC-BY-3 license AhoTTS dictionaries \
     and voices"
-    LicenseData "data/AhoTTS/LICENSE_VOICES.txt"
+    LicenseData "../AhoTTS/COPYRIGHT_and_LICENSE_voices.txt"
+PageExEnd
+
+PageEx license
+    LicenseText "You have to accept the license of the OpenAL library"
+    LicenseData "OPENAL_LICENSE.txt"
 PageExEnd
 
 DirText "Choose a directory"
@@ -98,18 +94,12 @@ Section /o "Karkarkar sources"
     File /r "../build.zig"
     File /r "../LICENSE.txt"
     File /r "../ahotts_c"
-SectionEnd
-
-Section "AhoTTS library"
-    SetOutPath "$INSTDIR\karkarkar"
-    File "lib/htts.dll"
-    File "lib/libhtts.dll"
-    File "lib/libhtts.dll.a"
+    File /r "../AhoTTS"
 SectionEnd
 
 Section "AhoTTS dictionaries and voices"
     SetOutPath "$LOCALAPPDATA\AhoTTS"
-    File /r "data/AhoTTS/"
+    File /r "../AhoTTS/data_tts"
 SectionEnd
 
 Section "OpenAL-soft library"
@@ -136,11 +126,6 @@ Section "Uninstall"
     Delete "$INSTDIR\karkarkar.exe"
     Delete "$INSTDIR\karkarkar.bat"
     Delete "$INSTDIR\icon.ico"
-
-    # AhoTTS
-    Delete "$INSTDIR\htts.dll"
-    Delete "$INSTDIR\libhtts.dll"
-    Delete "$INSTDIR\libhtts.dll.a"
 
     # AhoTTS dictionaries and voices
     RMDir /r "$LOCALAPPDATA\AhoTTS"

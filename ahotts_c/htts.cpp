@@ -1,5 +1,5 @@
 #include "htts.h"
-#include <AhoTTS/htts.hpp>
+#include <htts.hpp>
 
 // TODO use booleans where booleans are needed
 

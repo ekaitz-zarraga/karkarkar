@@ -7,10 +7,11 @@ Twitch kanal baten txata entzun.
 ## Nola
 
 Karkarkarrek AhoTTS, Aholab Bilboko Ingenieritza eskolan kokatutako ikerkuntza
-taldeak garatutako TTS sistemaren bertsio aldatu bat eta OpenAL erabiltzen
-ditu. Karkarkar  oso IRC bezero sinple bat erabiliz  socket baten bitartez
-Twitch-en IRC-ra konektatzen da eta mezu guztiak hartu eta ozenean irakurtzen
-ditu aipatutako liburutegiak erabiliz.
+taldeak garatutako TTS sistemaren bertsio eraldatu bat (proiektuaren barnean),
+eta OpenAL (kanpoko liburutegia) erabiltzen ditu. Karkarkar oso IRC bezero
+sinple bat erabiliz socket baten bitartez Twitch-en IRC-ra konektatzen da eta
+mezu guztiak hartu eta ozenean irakurtzen ditu aipatutako liburutegiak
+erabiliz.
 
 ## Kodea konpilatzeko
 
@@ -21,11 +22,6 @@ dependentziak:
   edozein erabili daiteke.
 
 [openal]: https://openal-soft.org/
-
-- [AhoTTS-ren bertsio aldatua][ahotts]. Planak daude AhoTTS asko aldatzeko,
-  arazo estrukturalak eta bugak dituelako.
-
-[ahotts]: https://github.com/ekaitz-zarraga/AhoTTS
 
 ## Copyrighta
 

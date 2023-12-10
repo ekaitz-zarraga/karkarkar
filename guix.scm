@@ -1,5 +1,4 @@
 (use-modules (zig)
-             (ahotts)
              (ice-9 rdelim)
              (ice-9 popen)
              (guix gexp)
@@ -34,7 +33,6 @@
     (build-system zig-build-system)
     (native-inputs (list imagemagick inkscape))
     (inputs (list openal))
-    (propagated-inputs (list ahotts))
     (arguments
       (list
         #:zig zig-0.11
@@ -42,6 +40,10 @@
         #:phases
         #~(modify-phases %standard-phases
             (delete 'validate-runpath)
+            (add-before 'install 'install-data
+              (lambda _
+                (mkdir-p (string-append #$output "/share/AhoTTS"))
+                (copy-recursively "AhoTTS/data_tts" (string-append #$output "/share/AhoTTS"))))
             (add-before 'install 'prepare-desktop
               (lambda _
                 (substitute* "linux/karkarkar.desktop"
