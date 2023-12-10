@@ -4,6 +4,7 @@ tags
 *.ico
 *.png
 *.exe
+*.deb
 windows/include/*
 windows/lib/*
 windows/data/*

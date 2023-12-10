@@ -11,4 +11,4 @@ Categories=Accessibility;Utility
 Version=1.0
 Terminal=true
 Icon=karkarkar
-Exec=/path/to/executable
+Exec=/usr/bin/karkarkar
