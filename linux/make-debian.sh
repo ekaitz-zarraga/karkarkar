@@ -13,6 +13,7 @@ cp -r "../AhoTTS/data_tts"       "$outfolder/usr/share/AhoTTS/"
 cp    "karkarkar.desktop"        "$outfolder/usr/share/applications"
 cp    "../icons/karkarkar.svg"   "$outfolder/usr/share/icons/hicolor/scalable/apps"
 cp    "../zig-out/bin/karkarkar" "$outfolder/usr/bin/"
+patchelf "$outfolder/usr/bin/karkarkar" --set-interpreter "/lib64/ld-linux-x86-64.so.2"
 
 mkdir -p "$outfolder/DEBIAN"
 cat > $outfolder/DEBIAN/control <<EOF
