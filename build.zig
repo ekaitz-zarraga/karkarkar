@@ -207,7 +207,6 @@ pub fn addConfig(step: *Step.Compile) !void {
     } else {
         step.linkSystemLibrary("openal");
     }
-    step.linker_allow_shlib_undefined = true;
 }
 
 pub fn build(b: *std.Build) !void {
