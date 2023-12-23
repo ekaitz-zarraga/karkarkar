@@ -61,14 +61,16 @@ pub const Irc = struct {
 
 
 // pub fn main () !void {
-//     var irc = try Irc.init(std.heap.page_allocator, "irc.chat.twitch.tv", 6667);
+//     const allocator = std.heap.page_allocator;
+//     var irc = try Irc.init(allocator, "irc.chat.twitch.tv", 6667);
 //     defer irc.deinit();
 //     // https://discuss.dev.twitch.com/t/anonymous-connection-to-twitch-chat/20392
 //     try irc.login();
+//     try irc.join("#ekaitzza");
 //     while (true) {
 //         var answer = try irc.rec();
 //         var message = IrcMessage.parse(answer);
-// 
+//
 //         switch (message.command) {
 //             IrcCommandTag.Ping    => {
 //                 std.debug.print("PING {s}", .{message.parameters.?});
@@ -78,16 +80,24 @@ pub const Irc = struct {
 //             IrcCommandTag.Cap     => |v| std.debug.print("CAP {} \n", .{v}),
 //             IrcCommandTag.Other   => std.debug.print("Unknown command: {s}\n", .{message.raw_command}),
 //         }
-//         // if (message.source) |s| {
-//         //     std.debug.print("source: {s}\n", .{s});
-//         // }
-//         // if (message.tags) |t| {
-//         //     std.debug.print("tags: {s}\n", .{t});
-//         // }
-//         // if (message.parameters) |p| {
-//         //     std.debug.print("parameters: {s}\n", .{p});
-//         // }
-//         std.heap.page_allocator.free(answer);
+//         if (message.source) |s| {
+//             std.debug.print("source: {s}\n", .{s});
+//         }
+//
+//         if (message.tags) |_| {
+//             var tags = try message.parseTags(allocator);
+//             defer tags.deinit();
+//             std.debug.print("tags:\n", .{});
+//             var it = tags.iterator();
+//             while(it.next()) |entry| {
+//                 std.debug.print("- {s} = {s}\n", .{entry.key_ptr.*, entry.value_ptr.*});
+//             }
+//         }
+//
+//         if (message.parameters) |p| {
+//             std.debug.print("parameters: {s}\n", .{p});
+//         }
+//         allocator.free(answer);
 //     }
 //     //things
 //     try irc.send("PART");
