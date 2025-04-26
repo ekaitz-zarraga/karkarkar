@@ -15,7 +15,7 @@ erabiliz.
 
 ## Kodea konpilatzeko
 
-Zig 0.11.0 erabili behar da kodea konpilatzeko eta hauek dira kodearen
+Zig 0.14.0 erabili behar da kodea konpilatzeko eta hauek dira kodearen
 dependentziak:
 
 - OpenAL-en implementazio bat: [OpenAL-soft][openal] erabili da, baina beste

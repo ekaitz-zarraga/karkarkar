@@ -14,7 +14,7 @@ a user and play them out loud using the mentioned libraries.
 
 ## How to compile
 
-Zig 0.11.0. These are the dependencies:
+Zig 0.14.0. These are the dependencies:
 
 - OpenAL: [OpenAL-soft][openal] has been used, but any other implementation
   should work.
