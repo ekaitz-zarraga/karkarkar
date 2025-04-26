@@ -25,7 +25,7 @@ pub fn main() !void {
     const stdin = std.io.getStdIn().reader();
     const stdout = std.io.getStdOut().writer();
     const stderr = std.io.getStdErr().writer();
-    var argv = std.os.argv;
+    const argv = std.os.argv;
 
     const progname = std.fs.path.basename(std.mem.span(argv[0]));
     if (argv.len == 2 and isHelp(argv[1])) {
@@ -85,8 +85,8 @@ pub fn main() !void {
     // TODO: graceful shutdown with SIGINT?? we don't have cross platform ways
     // to do it...
     while (true) {
-        var answer = try irc.rec();
-        var message = IrcMessage.parse(answer);
+        const answer = try irc.rec();
+        const message = IrcMessage.parse(answer);
 
         switch (message.command) {
             IrcCommandTag.Ping    => {
@@ -95,7 +95,7 @@ pub fn main() !void {
             },
             IrcCommandTag.Privmsg => |v| {
                 std.debug.print("{s}: Message received\n", .{v});
-                var body = try allocator.dupeZ(u8, message.parameters.?);
+                const body = try allocator.dupeZ(u8, message.parameters.?);
                 try talker.say(body.ptr);
             },
             IrcCommandTag.Cap     => |v| std.debug.print("CAP {} \n", .{v}),

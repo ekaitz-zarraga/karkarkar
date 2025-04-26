@@ -27,7 +27,7 @@ pub const Ao = struct {
         if ( driver == -1 ) {
             return AoError.DriverSelection;
         }
-        var device = c.ao_open_live(driver, &format, null)
+        const device = c.ao_open_live(driver, &format, null)
             orelse return AoError.DeviceOpen;
 
         return Ao {

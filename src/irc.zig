@@ -10,7 +10,7 @@ pub const Irc = struct {
     stream: net.Stream,
 
     pub fn init(allocator: std.mem.Allocator, hostname: []const u8, port: u16) !Irc {
-        var stream = try net.tcpConnectToHost(allocator, hostname, port);
+        const stream = try net.tcpConnectToHost(allocator, hostname, port);
         return Irc {
             .allocator = allocator,
             .stream = stream,
@@ -49,7 +49,7 @@ pub const Irc = struct {
     /// Returned response must be freed later.
     pub fn rec(self: *Irc) ![]u8{
         var reader = self.stream.reader();
-        var message = try reader.readUntilDelimiterAlloc(self.allocator, '\r', 1024);
+        const message = try reader.readUntilDelimiterAlloc(self.allocator, '\r', 1024);
         _ = try reader.readByte(); // discard \r
         return message;
     }

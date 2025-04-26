@@ -22,13 +22,13 @@ const HttsConfig = struct {
     fn init(alloc: std.mem.Allocator, datadir: []const u8, lang: []const u8)
         !HttsConfig
     {
-        var voice_dir = try fmt.allocPrint(alloc, "aholab_{s}_female", .{lang});
+        const voice_dir = try fmt.allocPrint(alloc, "aholab_{s}_female", .{lang});
         defer alloc.free(voice_dir);
 
-        var dicts_dir = try fmt.allocPrint(alloc, "{s}_dicc", .{lang});
+        const dicts_dir = try fmt.allocPrint(alloc, "{s}_dicc", .{lang});
         defer alloc.free(dicts_dir);
 
-        var main_dir  = try path.join(alloc, &[_][]const u8{datadir, "data_tts"});
+        const main_dir  = try path.join(alloc, &[_][]const u8{datadir, "data_tts"});
         return HttsConfig{
             .datadir  = main_dir,
             .voicedir = try path.join(alloc, &[_][]const u8{main_dir, "voices", voice_dir}),
@@ -50,8 +50,8 @@ pub const Htts = struct {
     lang: [*]const u8,
 
     pub fn init(alloc: std.mem.Allocator, datadir: []const u8, lang:[]const u8) !Htts {
-        var htts = c.HTTS_new() orelse return HttsError.Allocation;
-        var config = try HttsConfig.init(alloc, datadir, lang);
+        const htts = c.HTTS_new() orelse return HttsError.Allocation;
+        const config = try HttsConfig.init(alloc, datadir, lang);
 
         // NOTE: The order is relevant. CAREFUL
         _ = c.HTTS_set(htts, "Lang", lang.ptr);
@@ -77,8 +77,8 @@ pub const Htts = struct {
 
     pub fn consume(self: *Htts) ![]c_short{
         var samples: [*c]c_short = undefined;
-        var res = c.HTTS_output_multilingual(self.internal, self.lang, &samples);
-        var len = @as(usize, @intCast(if (res < 0) -res else res));
+        const res = c.HTTS_output_multilingual(self.internal, self.lang, &samples);
+        const len = @as(usize, @intCast(if (res < 0) -res else res));
         return samples[0..len];
     }
 

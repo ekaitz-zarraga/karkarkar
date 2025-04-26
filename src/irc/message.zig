@@ -12,9 +12,9 @@ pub const IrcCommandTag = enum {
 };
 pub const IrcCommand = union(IrcCommandTag) {
     Ping:  void,
-    Other: void,
     Privmsg: []const u8,
     Cap: bool,
+    Other: void,
 };
 
 pub const IrcSource = struct {
@@ -35,8 +35,8 @@ pub const IrcMessage = struct {
     source: ?[]u8,
 
     fn parseCommand(command: []u8) IrcCommand {
-        var iterator = std.mem.split(u8, command, " ");
-        var comm =  iterator.next() orelse unreachable;
+        var iterator = std.mem.splitSequence(u8, command, " ");
+        const comm =  iterator.next() orelse unreachable;
         if ( std.mem.eql(u8, comm, "PING") ){
             return .{ .Ping = undefined };
         }
@@ -67,9 +67,9 @@ pub const IrcMessage = struct {
     pub fn parseTags(self: IrcMessage, allocator: std.mem.Allocator) !IrcTags {
         // https://dev.twitch.tv/docs/irc/tags/
         var hm = IrcTags.init(allocator);
-        var iterator = std.mem.split(u8, self.tags orelse return hm, ";");
+        var iterator = std.mem.splitSequence(u8, self.tags orelse return hm, ";");
         while (iterator.next()) |t|{
-            var parts = std.mem.split(u8, t, "=");
+            var parts = std.mem.splitSequence(u8, t, "=");
             const k = parts.next() orelse unreachable;
             const v = parts.next() orelse unreachable;
             try hm.put(k, v);

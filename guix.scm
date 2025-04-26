@@ -1,5 +1,4 @@
-(use-modules (zig)
-             (ice-9 rdelim)
+(use-modules (ice-9 rdelim)
              (ice-9 popen)
              (guix gexp)
              (guix packages)
@@ -9,6 +8,7 @@
              (gnu packages audio)
              (gnu packages imagemagick)
              (gnu packages inkscape)
+             (gnu packages zig)
              ((guix licenses) #:prefix license:))
 
 
@@ -35,7 +35,7 @@
     (inputs (list openal))
     (arguments
       (list
-        #:zig zig-0.11
+        #:zig zig-0.14
         #:tests? #f
         #:phases
         #~(modify-phases %standard-phases

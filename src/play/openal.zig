@@ -26,13 +26,13 @@ pub const OpenAl = struct {
     device: *c.ALCdevice,
 
     pub fn init() !OpenAl {
-        var device = c.alcOpenDevice(null)
+        const device = c.alcOpenDevice(null)
             orelse return OpenAlError.OpenDevice;
 
-        var context = c.alcCreateContext(device, null)
+        const context = c.alcCreateContext(device, null)
             orelse return OpenAlError.CreateContext;
 
-        var curcontext = c.alcMakeContextCurrent(context);
+        const curcontext = c.alcMakeContextCurrent(context);
         if (curcontext == 0){
             return OpenAlError.CurrentContext;
         }

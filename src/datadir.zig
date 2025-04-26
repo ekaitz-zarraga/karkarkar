@@ -5,11 +5,11 @@ const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
 
 fn exists(directory: []const u8) bool{
-    const options = .{
+    var dir = fs.openDirAbsolute(directory, .{
         .access_sub_paths = false,
+        .iterate = false,
         .no_follow = false,
-    };
-    var dir = fs.openDirAbsolute(directory, options) catch return false;
+    }) catch return false;
     defer dir.close();
     return true;
 }
@@ -29,7 +29,7 @@ fn populateLinuxDirs(allocator: Allocator, dirs: *ArrayList([]const u8)) !void {
     const xdg_data_dirs = std.process.getEnvVarOwned(allocator, "XDG_DATA_DIRS") catch null;
     if (xdg_data_dirs) |x| {
         defer allocator.free(x);
-        var it = std.mem.tokenize(u8, x, ":");
+        var it = std.mem.tokenizeSequence(u8, x, ":");
         while (it.next()) |dir| {
             try dirs.append(try allocator.dupe(u8, dir));
         }
@@ -59,7 +59,7 @@ pub fn findDataDir(allocator: Allocator, appname: []const u8) ![]u8 {
     defer cleanDirs(allocator, &dirs);
 
     for (dirs.items) |dir| {
-        var directory = try fs.path.join(allocator, &[_][]const u8{ dir, appname });
+        const directory = try fs.path.join(allocator, &[_][]const u8{ dir, appname });
         std.debug.print("trying: {s}\n", .{directory});
         if ( !exists(directory) ){
             std.debug.print("Does not exist\n", .{});
